@@ -15,3 +15,6 @@ def to_binary(num):
   s = str(bin(num))
   binary_num = s[2:]
   return binary_num
+
+programmeCounter=0
+halt = False
