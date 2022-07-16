@@ -41,7 +41,7 @@ try:
     def flag_str_to_int(s):
         u=0
         for i in range(len(s)):
-            u+=s[i]**(len(s)-i-1)
+            u+=int(s[i])*(2**(len(s)-i-1))
 
         return u
 
