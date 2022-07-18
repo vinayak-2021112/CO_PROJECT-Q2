@@ -224,7 +224,7 @@ while (not halt):
 
     elif (op in type_F):
         halt = True
-    
+        values_print()
     programmeCounter+=1
 
 
