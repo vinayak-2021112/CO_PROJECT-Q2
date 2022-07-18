@@ -21,9 +21,9 @@ flag = {"V": 0, "L": 0, "G": 0, "E": 0}
 
 type_A = ["10000", "10001", "10110", "11010", "11011", "11100"]
 type_B = ["10010", "11000", "11001"]
-type_C = ["10011", "10111", "11101", "11110"]
+type_C = ["10011", "10111", "11101", "11110"]  # mov,divide,invert,compare
 type_D = ["10100", "10101"]
-type_E = ["11111", "01100", "01101", "01111"]
+type_E = ["11111", "01100", "01101", "01111"]  #unc_jump,jumpiflessthan,jumpifgreater,jumpifequal
 type_F = ["01010"]
 
 programmeCounter = 0
@@ -43,23 +43,50 @@ memory_dump = []
 for i in range(dump_len):
     memory_dump.append(og_dump)
 
-def values_print():
-    reg_values['FLAGS'] = 12*'0'+str(flag["V"])+str(flag["L"])+str(flag["G"])+str(flag["E"])
-    print(f"{to_binary(programmeCounter)} {to_16bit_binary(reg_values['R0'])} {to_16bit_binary(reg_values['R1'])} {to_16bit_binary(reg_values['R2'])} {to_16bit_binary(reg_values['R3'])} {to_16bit_binary(reg_values['R4'])} {to_16bit_binary(reg_values['R5'])} {to_16bit_binary(reg_values['R6'])} {(reg_values['FLAGS'])} ")
+def bin_str_to_int(s):
+        u=0
+        for i in range(len(s)):
+            u+=int(s[i])*(2**(len(s)-i-1))
+
+        return u
 
 def to_binary(num):
     s = str(bin(num))
     binary_num = s[2:]
-    if(len(binary_num)<8):
-        binary_num=(8-len(binary_num))*'0'+binary_num
     return binary_num
 
-def to_16bit_binary(num):
-    s = str(bin(num))
-    binary_num = s[2:]
-    if(len(binary_num)<16):
-        binary_num=(16-len(binary_num))*'0'+binary_num
-    return binary_num
+def mov_divide_invert_cmp(operation,regs1,regs2):
+    if operation == "mov":
+        reg_values[regs2]=reg_values[regs1]
+        return
+    elif operation == "div":
+        reg_values["R0"]=reg_values[regs1]//reg_values[regs2]
+        reg_values["R1"]=reg_values[regs1]%reg_values[regs2]
+        return
+    elif operation == "invert":
+        a=reg_values[regs1]
+        a=a.replace("1","2")
+        a=a.replace("0","1")
+        a=a.replace("2","0")
+        reg_values[regs2]=bin_str_to_int(str(a))
+
+#to be checked=>
+    elif operation == "cmp":
+        a=bin_str_to_int(reg_values[regs1])
+        b=bin_str_to_int(reg_values[regs2])
+        if a>b:
+            flag = {"V": 0, "L": 0, "G": 0, "E": 0}
+            flag["G"]=1 
+        elif a<b:
+            flag = {"V": 0, "L": 0, "G": 0, "E": 0}
+            flag["L"]=1 
+            return 
+        elif a==b:
+            flag = {"V": 0, "L": 0, "G": 0, "E": 0}
+            flag["E"]=1 
+            return 
+
+
 
 def to_int(s):
     return int(s, 2)
@@ -71,119 +98,97 @@ def arithmeticOperations(operation, regs1, regs2, regd):
             flag["V"] = 1
             return
         reg_values[regd] = reg_values[regs1] + reg_values[regs2]
-        values_print()
+        print(reg_values[regd])
         return
     elif operation == "sub":
         if reg_values[regs1] - reg_values[regs2] < 0:
             flag["V"] = 1
         reg_values[regd] = reg_values[regs1] - reg_values[regs2]
-        values_print()        
+        print(reg_values[regd])
         return
     elif operation == "mul":
         if reg_values[regs1] * reg_values[regs2] > 255 or reg_values[regs1] * reg_values[regs2] < 0:
             flag["V"] = 1
         reg_values[regd] = reg_values[regs1] * reg_values[regs2]
-        values_print()        
+        print(reg_values[regd])
         return
     elif operation == "xor":
         reg_values[regd] = reg_values[regs1] ^ reg_values[regs2]
-        values_print()        
+        print(reg_values[regd])
         return
     elif operation == "or":
         reg_values[regd] = reg_values[regs1] | reg_values[regs2]
-        values_print()       
+        print(reg_values[regd])
         return
     elif operation == "and":
         reg_values[regd] = reg_values[regs1] & reg_values[regs2]
-        values_print()        
+        print(reg_values[regd])
         return
-
 
 def shiftoperation(operation, regdes, regval):
     if operation == "movi":
         reg_values[regdes] = to_int(regval)
-        values_print()
+        print(reg_values[regdes])
     if operation == "ls":
         reg_values[regdes] = reg_values[regdes] << to_int(regval)
-        values_print()
+        print(reg_values[regdes])
         return
     if operation == "rs":
         reg_values[regdes] = reg_values[regdes] >> to_int(regval)
-        values_print()
+        print(reg_values[regdes])
         return
 def loadstore(operation,reg,mem):
     if operation=="ld":
-        int_mem_add = to_int(mem)
-        load_value = memory_dump[int_mem_add]
-        reg_values[reg] = to_int(load_value)
+        reg_values[reg]=reg_values[mem]
     if operation=="st":
-        int_mem_add = to_int(mem)
-        memory_dump[int_mem_add] = to_16bit_binary(reg_values[reg])
-
+        reg_values[mem]=reg_values[reg]
 
 while (not halt):
     machine_instruction = machine_code[programmeCounter]
-    op = machine_instruction[0:5]
-    
+    op = machine_code[0:5]
     operation = opcode[op]
 
     if (op in type_A):
-        reg_source1 = machine_instruction[7:10]
-        reg_source2 = machine_instruction[10:13]
-        reg_dest = machine_instruction[13:16]
+        reg_source1 = machine_code[7:10]
+        reg_source2 = machine_code[10:13]
+        reg_dest = machine_code[13:16]
         arithmeticOperations(operation, code_to_reg[reg_source1], code_to_reg[reg_source2], code_to_reg[reg_dest])
     elif (op in type_B):
-        reg_des = machine_instruction[5:8]
-        imm_val = machine_instruction[8:16]
+        reg_des = machine_code[5:8]
+        imm_val = machine_code[8:16]
         shiftoperation(operation, code_to_reg[reg_des], imm_val)
     elif (op in type_C):
-        reg1 = machine_instruction[10:13]
-        reg = machine_instruction[13:16]
+        reg1 = machine_code[10:13]
+        reg = machine_code[13:16]
+        mov_divide_invert_cmp(operation,reg1,reg)
+
         
     elif (op in type_D):
-        reg1 = machine_instruction[5:8]
-        memory_address = machine_instruction[8:16]
+        reg1 = machine_code[5:8]
+        memory_address = machine_code[8:16]
         loadstore(operation,reg1,memory_address)
 
 
     elif (op in type_E):
-        memory_address = machine_instruction[8:16]
+        memory_address = machine_code[8:16]
         if operation=="jmp":
-            values_print()
-            programmeCounter = to_int(memory_address)
-            continue
+            pass
         elif operation=="jlt":
             if flag["L"]==1:
-                values_print()
-                programmeCounter = to_int(memory_address)
-                continue
+                pass
             else:
-                values_print()
+                continue
         elif operation=="jgt":
             if flag["G"]==1:
-                values_print()
-                programmeCounter = to_int(memory_address)
-                continue
+                pass
             else:
-                values_print()
+                continue
         elif operation=="je":
             if flag["E"]==1:
-                values_print()
-                programmeCounter = to_int(memory_address)
-                continue
+                pass
             else:
-               values_print()
+                continue
 
     elif (op in type_F):
         halt = True
-    
     programmeCounter+=1
-
-
-for i in range(len(machine_code)):
-    print(machine_code[i])
-   
-
-for i in range(dump_len):
-    print(memory_dump[i])
-    
