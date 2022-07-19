@@ -3,9 +3,6 @@
 #                "and": "11100", "not": "11101", "cmp": "11110", "jmp": "11111", "jlt": "01100", "jgt": "01101",
 #                "je": "01111", "hlt": "01010", "var": "00000"}
 
-import opcode
-
-
 instruction = {"add": "00000", "sub": "00001", "ld": "00100", "st": "00101", "mul": "00110",
          "div": "00111", "rs": "01000", "ls": "01001", "xor": "01010", "or": "01011", "and": "01100", "not": "01101",
          "cmp": "01110", "jmp": "01111", "jlt": "10000", "jgt": "10001", "je": "10010", "hlt": "10011",
@@ -76,17 +73,24 @@ def to_16bit_binary(num):
     binary_num = s[2:]
     if(len(binary_num)<16):
         binary_num=(16-len(binary_num))*'0'+binary_num
+    if(len(binary_num)>16):
+        ind = len(binary_num)-16
+        binary_num = binary_num[ind:]
     return binary_num
 
 def to_int(s):
     return int(s, 2)
 
+def set_flag_zero(flag):
+    for i in flag:
+        flag[i] = 0
 
-def arithmeticOperations(operation, regs1, regs2, regd):
+def arithmeticOperations(operation, regd, regs1, regs2):
     if operation == "add":
+        
         if reg_values[regs1] + reg_values[regs2] > 255:
             flag["V"] = 1
-            return
+            
         reg_values[regd] = reg_values[regs1] + reg_values[regs2]
         values_print()
         return
@@ -97,7 +101,7 @@ def arithmeticOperations(operation, regs1, regs2, regd):
         values_print()        
         return
     elif operation == "mul":
-        if reg_values[regs1] * reg_values[regs2] > 255 or reg_values[regs1] * reg_values[regs2] < 0:
+        if reg_values[regs1] * reg_values[regs2] > 65535 or reg_values[regs1] * reg_values[regs2] < 0:
             flag["V"] = 1
         reg_values[regd] = reg_values[regs1] * reg_values[regs2]
         values_print()        
@@ -120,6 +124,7 @@ def shiftoperation(operation, regdes, regval):
     if operation == "movi":
         reg_values[regdes] = to_int(regval)
         values_print()
+        return
     if operation == "ls":
         reg_values[regdes] = reg_values[regdes] << to_int(regval)
         values_print()
@@ -151,11 +156,13 @@ while (not halt):
     operation = opcode[op]
 
     if (op in type_A):
-        reg_source1 = machine_instruction[7:10]
-        reg_source2 = machine_instruction[10:13]
-        reg_dest = machine_instruction[13:16]
-        arithmeticOperations(operation, code_to_reg[reg_source1], code_to_reg[reg_source2], code_to_reg[reg_dest])
+        set_flag_zero(flag)
+        reg_dest = machine_instruction[7:10]
+        reg_source1 = machine_instruction[10:13]
+        reg_source2 = machine_instruction[13:16]
+        arithmeticOperations(operation, code_to_reg[reg_dest], code_to_reg[reg_source1], code_to_reg[reg_source2])
     elif (op in type_B):
+        set_flag_zero(flag)
         reg_des = machine_instruction[5:8]
         imm_val = machine_instruction[8:16]
         if(op=="10010"):
@@ -164,6 +171,7 @@ while (not halt):
         else:
           shiftoperation(operation, code_to_reg[reg_des], imm_val)
     elif (op in type_C):
+        set_flag_zero(flag)
         reg1 = machine_instruction[10:13]
         reg2 = machine_instruction[13:16]
         if(operation=="movr"):
@@ -177,10 +185,7 @@ while (not halt):
           reg_values[code_to_reg[reg2]] = ~reg_values[code_to_reg[reg1]]
           values_print()
         elif(operation=="cmp"):
-          flag["V"]=0
-          flag["L"]=0
-          flag["E"]=0
-          flag["G"]=0
+          set_flag_zero(flag)
           if(reg_values[code_to_reg[reg1]]==reg_values[code_to_reg[reg2]]):
             flag["E"] = 1
           elif(reg_values[code_to_reg[reg1]]>reg_values[code_to_reg[reg2]]):
@@ -195,6 +200,7 @@ while (not halt):
 
 
     elif (op in type_E):
+
         memory_address = machine_instruction[8:16]
         if operation=="jmp":
             values_print()
@@ -202,27 +208,38 @@ while (not halt):
             continue
         elif operation=="jlt":
             if flag["L"]==1:
+                set_flag_zero(flag)
                 values_print()
                 programmeCounter = to_int(memory_address)
                 continue
             else:
+                set_flag_zero(flag)
                 values_print()
         elif operation=="jgt":
             if flag["G"]==1:
+                set_flag_zero(flag)
                 values_print()
                 programmeCounter = to_int(memory_address)
+                # print("TESING...........")
+                # print(machine_code[programmeCounter])
                 continue
             else:
+                set_flag_zero(flag)
                 values_print()
         elif operation=="je":
             if flag["E"]==1:
+                set_flag_zero(flag)
                 values_print()
                 programmeCounter = to_int(memory_address)
+                # print("TESTING")
+                # print(machine_code[programmeCounter])
                 continue
             else:
-               values_print()
+                set_flag_zero(flag)
+                values_print()
 
     elif (op in type_F):
+        set_flag_zero(flag)
         halt = True
         values_print()
     programmeCounter+=1
