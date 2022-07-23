@@ -191,10 +191,12 @@ while (not halt):
             reg_values[code_to_reg[reg1]] = reg_values[code_to_reg[reg2]]
             values_print()
         elif(operation=="div"):
-          reg_values[code_to_reg[reg1]] = reg_values[code_to_reg[reg1]]/reg_values[code_to_reg[reg2]]
-          reg_values[code_to_reg[reg2]] = reg_values[code_to_reg[reg1]]%reg_values[code_to_reg[reg2]]
-          values_print()
+            set_flag_zero(flag)
+            reg_values[code_to_reg[reg1]] = reg_values[code_to_reg[reg1]]/reg_values[code_to_reg[reg2]]
+            reg_values[code_to_reg[reg2]] = reg_values[code_to_reg[reg1]]%reg_values[code_to_reg[reg2]]
+            values_print()
         elif(operation=="not"):
+            set_flag_zero(flag)
             a = to_16bit_binary(reg_values[code_to_reg[reg2]])
             final = ''
             for i in range(16):
@@ -216,6 +218,7 @@ while (not halt):
             flag["L"] = 1
           values_print()
     elif (op in type_D):
+        set_flag_zero(flag)
         reg1 = machine_instruction[5:8]
         memory_address = machine_instruction[8:16]
         loadstore(operation,reg1,memory_address)
