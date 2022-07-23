@@ -2,10 +2,6 @@
 #                "mul": "10110", "div": "10111", "rs": "11000", "ls": "11001", "xor": "11010", "or": "11011",
 #                "and": "11100", "not": "11101", "cmp": "11110", "jmp": "11111", "jlt": "01100", "jgt": "01101",
 #                "je": "01111", "hlt": "01010", "var": "00000"}
-
-from sre_parse import FLAGS
-
-
 instruction = {"add": "00000", "sub": "00001", "ld": "00100", "st": "00101", "mul": "00110",
          "div": "00111", "rs": "01000", "ls": "01001", "xor": "01010", "or": "01011", "and": "01100", "not": "01101",
          "cmp": "01110", "jmp": "01111", "jlt": "10000", "jgt": "10001", "je": "10010", "hlt": "10011",
@@ -62,7 +58,7 @@ for i in range(dump_len):
 
 def values_print():
     reg_values['FLAGS'] = 12*'0'+str(flag["V"])+str(flag["L"])+str(flag["G"])+str(flag["E"])
-    print(f"{to_binary(programmeCounter)} {to_16bit_binary(reg_values['R0'])} {to_16bit_binary(reg_values['R1'])} {to_16bit_binary(reg_values['R2'])} {to_16bit_binary(reg_values['R3'])} {to_16bit_binary(reg_values['R4'])} {to_16bit_binary(reg_values['R5'])} {to_16bit_binary(reg_values['R6'])} {(reg_values['FLAGS'])} ")
+    print(f"{to_binary(programmeCounter)} {to_16bit_binary(reg_values['R0'])} {to_16bit_binary(reg_values['R1'])} {to_16bit_binary(reg_values['R2'])} {to_16bit_binary(reg_values['R3'])} {to_16bit_binary(reg_values['R4'])} {to_16bit_binary(reg_values['R5'])} {to_16bit_binary(reg_values['R6'])} {(reg_values['FLAGS'])}")
 
 def to_binary(num):
     s = str(bin(num))
