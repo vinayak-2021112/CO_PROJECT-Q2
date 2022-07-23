@@ -3,6 +3,9 @@
 #                "and": "11100", "not": "11101", "cmp": "11110", "jmp": "11111", "jlt": "01100", "jgt": "01101",
 #                "je": "01111", "hlt": "01010", "var": "00000"}
 
+from sre_parse import FLAGS
+
+
 instruction = {"add": "00000", "sub": "00001", "ld": "00100", "st": "00101", "mul": "00110",
          "div": "00111", "rs": "01000", "ls": "01001", "xor": "01010", "or": "01011", "and": "01100", "not": "01101",
          "cmp": "01110", "jmp": "01111", "jlt": "10000", "jgt": "10001", "je": "10010", "hlt": "10011",
@@ -90,19 +93,24 @@ def arithmeticOperations(operation, regd, regs1, regs2):
         
         if reg_values[regs1] + reg_values[regs2] > 255:
             flag["V"] = 1
-            
+            large = 2**16
+            sum_over = reg_values[regs1] + reg_values[regs2]
+            reg_values[regd] = sum_over/large
         reg_values[regd] = reg_values[regs1] + reg_values[regs2]
         values_print()
         return
     elif operation == "sub":
         if reg_values[regs1] - reg_values[regs2] < 0:
             flag["V"] = 1
+            reg_values[regd] = 0
+            values_print()
+            return
         reg_values[regd] = reg_values[regs1] - reg_values[regs2]
         values_print()        
         return
     elif operation == "mul":
-        if reg_values[regs1] * reg_values[regs2] > 65535 or reg_values[regs1] * reg_values[regs2] < 0:
-            flag["V"] = 1
+        # if reg_values[regs1] * reg_values[regs2] > 65535 or reg_values[regs1] * reg_values[regs2] < 0:
+        #     flag["V"] = 1
         reg_values[regd] = reg_values[regs1] * reg_values[regs2]
         values_print()        
         return
@@ -171,19 +179,37 @@ while (not halt):
         else:
           shiftoperation(operation, code_to_reg[reg_des], imm_val)
     elif (op in type_C):
-        set_flag_zero(flag)
+        
         reg1 = machine_instruction[10:13]
         reg2 = machine_instruction[13:16]
         if(operation=="movr"):
-          reg_values[code_to_reg[reg1]] = reg_values[code_to_reg[reg2]]
-          values_print()
+            # if(code_to_reg[reg1]=="FLAGS"):
+            #     flag_val = to_int(str(flag["V"])+str(flag["L"])+str(flag["G"])+str(flag["E"]))
+            #     reg_values[code_to_reg[reg1]] = flag_val
+            if(code_to_reg[reg2]=="FLAGS"):
+                flag_val = to_int(str(flag["V"])+str(flag["L"])+str(flag["G"])+str(flag["E"]))
+                
+                reg_values[code_to_reg[reg2]] = flag_val
+            set_flag_zero(flag)
+            
+            reg_values[code_to_reg[reg1]] = reg_values[code_to_reg[reg2]]
+            values_print()
         elif(operation=="div"):
           reg_values[code_to_reg[reg1]] = reg_values[code_to_reg[reg1]]/reg_values[code_to_reg[reg2]]
           reg_values[code_to_reg[reg2]] = reg_values[code_to_reg[reg1]]%reg_values[code_to_reg[reg2]]
           values_print()
         elif(operation=="not"):
-          reg_values[code_to_reg[reg2]] = ~reg_values[code_to_reg[reg1]]
-          values_print()
+            a = to_16bit_binary(reg_values[code_to_reg[reg2]])
+            final = ''
+            for i in range(16):
+                if(a[i]=='0'):
+                    final=final+'1'
+                else:
+                    final = final+'0'
+                    
+
+            reg_values[code_to_reg[reg2]] = to_int(final)
+            values_print()
         elif(operation=="cmp"):
           set_flag_zero(flag)
           if(reg_values[code_to_reg[reg1]]==reg_values[code_to_reg[reg2]]):
