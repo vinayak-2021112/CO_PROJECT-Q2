@@ -199,12 +199,23 @@ while (not halt):
             values_print()
         elif(operation=="div"):
             set_flag_zero(flag)
-            reg_values[code_to_reg[reg1]] = reg_values[code_to_reg[reg1]]/reg_values[code_to_reg[reg2]]
-            reg_values[code_to_reg[reg2]] = reg_values[code_to_reg[reg1]]%reg_values[code_to_reg[reg2]]
+            x = reg_values[code_to_reg[reg1]]
+            y = reg_values[code_to_reg[reg2]]
+            reg_values["R0"] = x//y
+            reg_values["R1"] = x%y
             values_print()
         elif(operation=="not"):
             set_flag_zero(flag)
-            a = to_16bit_binary(reg_values[code_to_reg[reg1]])
+            # a = to_16bit_binary(reg_values[code_to_reg[reg1]])
+            # final = ''
+            # for i in range(16):
+            #     if(a[i]=='0'):
+            #         final=final+'1'
+            #     else:
+            #         final = final+'0'
+            # final_val = to_int(final)
+            # reg_values[code_to_reg[reg2]] = final_val
+            a = to_16bit_binary(reg_values[code_to_reg[reg2]])
             final = ''
             for i in range(16):
                 if(a[i]=='0'):
@@ -212,11 +223,11 @@ while (not halt):
                 else:
                     final = final+'0'
             final_val = to_int(final)
-            reg_values[code_to_reg[reg2]] = final_val
+            reg_values[code_to_reg[reg1]] = final_val
 
                     
 
-            reg_values[code_to_reg[reg2]] = to_int(final)
+        
             values_print()
         elif(operation=="cmp"):
           set_flag_zero(flag)
