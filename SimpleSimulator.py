@@ -105,8 +105,8 @@ def arithmeticOperations(operation, regd, regs1, regs2):
         values_print()        
         return
     elif operation == "mul":
-        # if reg_values[regs1] * reg_values[regs2] > 65535 or reg_values[regs1] * reg_values[regs2] < 0:
-        #     flag["V"] = 1
+        if reg_values[regs1] * reg_values[regs2] > 65535 or reg_values[regs1] * reg_values[regs2] < 0:
+            flag["V"] = 1
         reg_values[regd] = reg_values[regs1] * reg_values[regs2]
         values_print()        
         return
