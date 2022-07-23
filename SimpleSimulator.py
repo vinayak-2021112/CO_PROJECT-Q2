@@ -91,7 +91,9 @@ def arithmeticOperations(operation, regd, regs1, regs2):
             flag["V"] = 1
             large = 2**16
             sum_over = reg_values[regs1] + reg_values[regs2]
-            reg_values[regd] = sum_over/large
+            reg_values[regd] = sum_over%large
+            values_print()
+            return
         reg_values[regd] = reg_values[regs1] + reg_values[regs2]
         values_print()
         return
@@ -107,6 +109,11 @@ def arithmeticOperations(operation, regd, regs1, regs2):
     elif operation == "mul":
         if reg_values[regs1] * reg_values[regs2] > 65535 or reg_values[regs1] * reg_values[regs2] < 0:
             flag["V"] = 1
+            large = 2**16
+            mul_over = reg_values[regs1]*reg_values[regs2]
+            reg_values[regd] = mul_over%large
+            values_print()
+            return
         reg_values[regd] = reg_values[regs1] * reg_values[regs2]
         values_print()        
         return
@@ -228,6 +235,7 @@ while (not halt):
 
         memory_address = machine_instruction[8:16]
         if operation=="jmp":
+            set_flag_zero(flag)
             values_print()
             programmeCounter = to_int(memory_address)
             continue
