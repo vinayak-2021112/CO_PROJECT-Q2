@@ -84,6 +84,45 @@ def set_flag_zero(flag):
     for i in flag:
         flag[i] = 0
 
+def to_binary(num):
+    s = str(bin(num))
+    binary_num = s[2:]
+    if (len(binary_num) < 8):
+        binary_num = (3 - len(binary_num)) * '0' + binary_num
+    return binary_num
+w=''
+i=0
+def rec(x):
+    global w,i
+    s=x/(10**len(str(x)))
+    s1 = str(s).split(".")
+    i+=1
+
+    if (s1[1])=='0' or i>5:
+        return
+    s2=str(((int(s1[1])*2)/10**len(str(s1[1])))).split(".")
+
+    w+=s2[0]
+
+
+    rec(int(s2[1]))
+
+
+
+def funcfordecimal(x):
+    s=str(x).split(".")
+    l=int(s[0])
+    r=int(s[1])
+    lb=to_binary(l)
+    rec(r)
+    print(lb)
+    print(w)
+
+
+
+
+
+
 def arithmeticOperations(operation, regd, regs1, regs2):
     if operation == "add":
         
