@@ -82,7 +82,7 @@ def to_float(s):  #vinayak function yahan banaio
     r=s[4:]
     dec=r[::-1]
     num=to_int(l)
-    for i in range(len(r)):
+    for i in range(1,len(r)+1):
         num+= dec[i]**(-i)
     return num
 
