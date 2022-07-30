@@ -85,7 +85,7 @@ try:
         lb = to_binary(l)
         rec(r)
         s1 = str(lb)
-        s2 = str('0'*(5-len(wxx))+wxx)
+        s2 = str(wxx+'0'*(5-len(wxx)))
 
         return (s1 + s2)
 
