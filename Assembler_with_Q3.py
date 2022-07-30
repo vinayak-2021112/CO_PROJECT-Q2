@@ -51,7 +51,7 @@ try:
     addtoLabel = True
 
 
-    def to_binary(num):
+    def to_binaryfloat(num):
         s = str(bin(num))
         binary_num = s[2:]
         if (len(binary_num) < 8):
@@ -82,12 +82,51 @@ try:
         s = str(x).split(".")
         l = int(s[0])
         r = int(s[1])
-        lb = to_binary(l)
+        lb = to_binaryfloat(l)
         rec(r)
         s1 = str(lb)
         s2 = str(wxx+'0'*(5-len(wxx)))
+        x=0
+        for u in s1:
+            if u=='0':
+                x+=1
+            else:
+                break
 
-        return (s1 + s2)
+
+        return (s1[x:] + "."+ s2)
+
+
+    def convertToIeee(s):
+        s1=funcfordecimal(s)
+    
+
+        u=0
+        for i in s1[1:]:
+            if i!=".":
+                u+=1
+            else:
+                break
+
+        w=''
+        w+=s1[0]
+        w+="."
+        for i in s1[1:]:
+            if i!=".":
+                w+=i
+   
+
+        exponent=to_binaryfloat(u)
+        return exponent+w[2:7]
+
+
+
+   # print(convertToIeee(1.3125))
+
+
+
+
+
 
 
     def flag_str_to_int(s):
