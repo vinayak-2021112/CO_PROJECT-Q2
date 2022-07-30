@@ -88,7 +88,7 @@ def to_16bit_binary(num):
 def to_float(s):  # vinayak function yahan banaio
     l = s[:4]
     r = s[4:]
-    dec = r[::-1]
+    dec = r
     num = to_int(l)
     for i in range(len(r)):
         num += dec[i] ** (-i)
