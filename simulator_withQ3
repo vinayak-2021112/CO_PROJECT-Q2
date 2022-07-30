@@ -1,386 +1,501 @@
-instruction = {"add": "10000","addf": "00000", "sub": "10001","subf": "0001", "movi": "10010","movf": "00010", "movr": "10011", "ld": "10100", "st": "10101",
-               "mul": "10110", "div": "10111", "rs": "11000", "ls": "11001", "xor": "11010", "or": "11011",
-               "and": "11100", "not": "11101", "cmp": "11110", "jmp": "11111", "jlt": "01100", "jgt": "01101",
-               "je": "01111", "hlt": "01010", "var": "00000"}
-# instruction = {"add": "00000", "sub": "00001", "ld": "00100", "st": "00101", "mul": "00110",
-#                "div": "00111", "rs": "01000", "ls": "01001", "xor": "01010", "or": "01011", "and": "01100",
-#                "not": "01101",
-#                "cmp": "01110", "jmp": "01111", "jlt": "10000", "jgt": "10001", "je": "10010", "hlt": "10011",
-#                "movi": "00010", "movr": "00011"
-#                }
+try:
+    instruction = {"add": "10000", "sub": "10001", "movi": "10010", "movr": "10011", "ld": "10100", "st": "10101",
+                    "mul": "10110", "div": "10111", "rs": "11000", "ls": "11001", "xor": "11010", "or": "11011",
+                    "and": "11100", "not": "11101", "cmp": "11110", "jmp": "11111", "jlt": "01100", "jgt": "01101",
+                    "je": "01111", "hlt": "01010", "var": "00000"}
 
-opcode = {"10000": "add","00000": "addf", "10001": "sub","00001": "subf", "10010": "movi","00010": "movf","10011": "movr", "10100": "ld", "10101": "st",
-          "10110": "mul", "10111": "div", "11000": "rs", "11001": "ls", "11010": "xor", "11011": "or",
-          "11100": "and", "11101": "not", "11110": "cmp", "11111": "jmp", "01100": "jlt", "01101": "jgt",
-          "01111": "je", "01010": "hlt", "00000": "var"}
+    # instruction = {"add": "00000", "sub": "00001", "ld": "00100", "st": "00101", "mul": "00110",
+    #                "div": "00111", "rs": "01000", "ls": "01001", "xor": "01010", "or": "01011", "and": "01100",
+    #                "not": "01101",
+    #                "cmp": "01110", "jmp": "01111", "jlt": "10000", "jgt": "10001", "je": "10010", "hlt": "10011",
+    #                "movi": "00010", "movr": "00011"
+    #                }
+    register = {"R0": "000", "R1": "001", "R2": "010", "R3": "011", "R4": "100", "R5": "101", "R6": "110",
+                "FLAGS": "111"}
+    reg = {"R0": "000", "R1": "001", "R2": "010", "R3": "011", "R4": "100", "R5": "101", "R6": "110"}
 
-# opcode = {'00000': 'add', '00001': 'sub', '00100': 'ld', '00101': 'st', '00110': 'mul', '00111': 'div', '01000': 'rs',
-#           '01001': 'ls', '01010': 'xor', '01011': 'or', '01100': 'and', '01101': 'not', '01110': 'cmp', '01111': 'jmp',
-#           '10000': 'jlt', '10001': 'jgt', '10010': 'je', '10011': 'hlt', '00010': 'movi', '00011': 'movr'}
+    flag = "0000000000000000"
+    dictreg = {"R0": 0, "R1": 0, "R2": 0, "R3": 0, "R4": 0, "R5": 0, "R6": 0}
+    ErrorArray = []
+    # variables
+    arr = []
+    line_counter = 0
+    halt_count = 0
+    load_store = {}
+    label = {}
+    variables = {}
+    # reading from file
+    f = open("Myfile.txt", "w")
+    # f.write(str(input().split()))
+    while True:
+        try:
+            s = input()
+            if (s == ''):
+                continue
+            s = " ".join(s.split())
+            f.write(s + "\n")
 
-reg_codes = {"R0": "000", "R1": "001", "R2": "010", "R3": "011", "R4": "100", "R5": "101", "R6": "110",
-             "FLAGS": "111"}
+        except EOFError:
+            break
+    f.close()
+    f = open("Myfile.txt", "r")
 
-code_to_reg = {"000": "R0", "001": "R1", "010": "R2", "011": "R3", "100": "R4", "101": "R5", "110": "R6",
-               "111": "FLAGS"}
+    # extracting individual lines from file
+    s = f.read().split("\n")
+    s = s[:len(s) - 1]
 
-reg_values = {"R0": 0, "R1": 0, "R2": 0, "R3": 0, "R4": 0, "R5": 0, "R6": 0,
-              "FLAGS": 0}
-
-flag = {"V": 0, "L": 0, "G": 0, "E": 0}
-
-type_A = ["00000","00001","10000", "10001", "10110", "11010", "11011", "11100"]
-type_B = ["00010","10010", "11000", "11001"]
-type_C = ["10011", "10111", "11101", "11110"]
-type_D = ["10100", "10101"]
-type_E = ["11111", "01100", "01101", "01111"]
-type_F = ["01010"]
-# type_A = ['00000', '00001', '00110', '01010', '01011', '01100']
-# type_B = ['00010', '01000', '01001']
-# type_C = ['00011', '00111', '01101', '01110']
-# type_D = ['00100', '00101']
-# type_E = ['01111', '10000', '10001', '10010']
-# type_F = ['10011']
-
-programmeCounter = 0
-halt = False
-
-machine_code = []
-while (True):
-    try:
-        s = input()
-        machine_code.append(s)
-    except EOFError:
-        break
-
-dump_len = 256 - len(machine_code)
-og_dump = '0' * 16
-memory_dump = []
-for i in range(dump_len):
-    memory_dump.append(og_dump)
+    pcNo = len(s)
+    leng_instruction = len(s)
+    leng_instruction_og = len(s)
+    ErrorFlag = 0
+    addtoLabel = True
 
 
-def values_print():
-    reg_values['FLAGS'] = 12 * '0' + str(flag["V"]) + str(flag["L"]) + str(flag["G"]) + str(flag["E"])
-    print(
-        f"{to_binary(programmeCounter)} {to_16bit_binary(reg_values['R0'])} {to_16bit_binary(reg_values['R1'])} {to_16bit_binary(reg_values['R2'])} {to_16bit_binary(reg_values['R3'])} {to_16bit_binary(reg_values['R4'])} {to_16bit_binary(reg_values['R5'])} {to_16bit_binary(reg_values['R6'])} {(reg_values['FLAGS'])}")
+    def to_binaryfloat(num):
+        s = str(bin(num))
+        binary_num = s[2:]
+        if (len(binary_num) < 8):
+            binary_num = (3 - len(binary_num)) * '0' + binary_num
+        return binary_num
 
 
-def to_binary(num):
-    s = str(bin(num))
-    binary_num = s[2:]
-    if (len(binary_num) < 8):
-        binary_num = (8 - len(binary_num)) * '0' + binary_num
-    return binary_num
+    wxx = ''
+    pqr = 0
 
 
-def to_16bit_binary(num):
-    s = str(bin(num))
-    binary_num = s[2:]
-    if (len(binary_num) < 16):
-        binary_num = (16 - len(binary_num)) * '0' + binary_num
-    if (len(binary_num) > 16):
-        ind = len(binary_num) - 16
-        binary_num = binary_num[ind:]
-    return binary_num
+    def rec(x):
+        global wxx, pqr
+        s = x / (10 ** len(str(x)))
+        s1 = str(s).split(".")
+        pqr += 1
 
-
-def to_float(s):  # vinayak function yahan banaio
-    l = s[:4]
-    r = s[4:]
-    dec = r
-    num = to_int(l)
-    for i in range(len(r)):
-        num += dec[i] ** (-i)
-    return num
-
-
-def to_int(s):
-    return int(s, 2)
-
-
-def set_flag_zero(flag):
-    for i in flag:
-        flag[i] = 0
-
-
-def to_binaryf(num):
-    s = str(bin(num))
-    binary_num = s[2:]
-    if (len(binary_num) < 8):
-        binary_num = (3 - len(binary_num)) * '0' + binary_num
-    return binary_num
-
-
-wxx = ''
-pqr = 0
-
-
-def rec(x):
-    global wxx, pqr
-    s = x / (10 ** len(str(x)))
-    s1 = str(s).split(".")
-    pqr += 1
-
-    if (s1[1]) == '0' or pqr > 5:
-        return
-    s2 = str(((int(s1[1]) * 2) / 10 ** len(str(s1[1])))).split(".")
-
-    wxx += s2[0]
-
-    rec(int(s2[1]))
-
-
-def funcfordecimal(x):
-    s = str(x).split(".")
-    l = int(s[0])
-    r = int(s[1])
-    lb = to_binaryf(l)
-    rec(r)
-    s1 = str(lb)
-    s2 = str('0' * (5 - len(wxx)) + wxx)
-
-    return (s1 + s2)
-
-
-def arithmeticOperations(operation, regd, regs1, regs2):
-    if operation == "addf":
-        if reg_values[regs1] + reg_values[regs2] > 65535:
-            flag["V"] = 1
-            large = 2 ** 16
-            sum_over = reg_values[regs1] + reg_values[regs2]
-            reg_values[regd] = sum_over % large
-            values_print()
+        if (s1[1]) == '0' or pqr > 5:
             return
-        reg_values[regd] = reg_values[regs1] + reg_values[regs2]
+        s2 = str(((int(s1[1]) * 2) / 10 ** len(str(s1[1])))).split(".")
 
-        values_print()
-        return
-    if operation == "add":
+        wxx += s2[0]
 
-        if reg_values[regs1] + reg_values[regs2] > 65535:
-            flag["V"] = 1
-            large = 2 ** 16
-            sum_over = reg_values[regs1] + reg_values[regs2]
-            reg_values[regd] = sum_over % large
-            values_print()
-            return
-        reg_values[regd] = reg_values[regs1] + reg_values[regs2]
-
-        values_print()
-        return
-    elif operation == "subf":
-        if reg_values[regs1] - reg_values[regs2] < 0:
-            flag["V"] = 1
-            reg_values[regd] = 0
-            values_print()
-            return
-        reg_values[regd] = reg_values[regs1] - reg_values[regs2]
-        values_print()
-        return
-
-    elif operation == "sub":
-        if reg_values[regs1] - reg_values[regs2] < 0:
-            flag["V"] = 1
-            reg_values[regd] = 0
-            values_print()
-            return
-        reg_values[regd] = reg_values[regs1] - reg_values[regs2]
-        values_print()
-        return
-    elif operation == "mul":
-        if reg_values[regs1] * reg_values[regs2] > 65535 or reg_values[regs1] * reg_values[regs2] < 0:
-            flag["V"] = 1
-            large = 2 ** 16
-            mul_over = reg_values[regs1] * reg_values[regs2]
-            reg_values[regd] = mul_over % large
-            values_print()
-            return
-        reg_values[regd] = reg_values[regs1] * reg_values[regs2]
-        values_print()
-        return
-    elif operation == "xor":
-        reg_values[regd] = reg_values[regs1] ^ reg_values[regs2]
-        values_print()
-        return
-    elif operation == "or":
-        reg_values[regd] = reg_values[regs1] | reg_values[regs2]
-        values_print()
-        return
-    elif operation == "and":
-        reg_values[regd] = reg_values[regs1] & reg_values[regs2]
-        values_print()
-        return
+        rec(int(s2[1]))
 
 
-def shiftoperation(operation, regdes, regval):
-    if operation == "movf":
-        reg_values[regdes] = to_float(regval)  # vinayak to_float ka function bnaio
-        values_print()
-        return
-    if operation == "movi":
-        reg_values[regdes] = to_int(regval)
-        values_print()
-        return
-    if operation == "ls":
-        reg_values[regdes] = reg_values[regdes] << to_int(regval)
-        values_print()
-        return
-    if operation == "rs":
-        reg_values[regdes] = reg_values[regdes] >> to_int(regval)
-        values_print()
-        return
+    def funcfordecimal(x):
+        s = str(x).split(".")
+        l = int(s[0])
+        r = int(s[1])
+        lb = to_binaryfloat(l)
+        rec(r)
+        s1 = str(lb)
+        s2 = str(wxx+'0'*(5-len(wxx)))
+        x=0
+        for u in s1:
+            if u=='0':
+                x+=1
+            else:
+                break
 
 
-def loadstore(operation, reg, mem):
-
-    if operation == "ld":
-        int_mem_add = to_int(mem)
-        int_mem_add = int_mem_add - len(machine_code)
-        load_value = memory_dump[int_mem_add]
-        reg_values[code_to_reg[reg]] = to_int(load_value)
-        values_print()
-    if operation == "st":
-
-        int_mem_add = to_int(mem)
-        int_mem_add = int_mem_add - len(machine_code)
-        memory_dump[int_mem_add] = to_16bit_binary(reg_values[code_to_reg[reg]])
-
-        values_print()
+        return (s1[x:] + "."+ s2)
 
 
-while (not halt):
-    machine_instruction = machine_code[programmeCounter]
-    op = machine_instruction[0:5]
+    def convertToIeee(s):
+        s1=funcfordecimal(s)
+    
 
-    operation = opcode[op]
+        u=0
+        for i in s1[1:]:
+            if i!=".":
+                u+=1
+            else:
+                break
 
-    if (op in type_A):
-        set_flag_zero(flag)
-        reg_dest = machine_instruction[7:10]
-        reg_source1 = machine_instruction[10:13]
-        reg_source2 = machine_instruction[13:16]
-        arithmeticOperations(operation, code_to_reg[reg_dest], code_to_reg[reg_source1], code_to_reg[reg_source2])
-    elif (op in type_B):
-        set_flag_zero(flag)
-        reg_des = machine_instruction[5:8]
-        imm_val = machine_instruction[8:16]
-        if (op == "10010"):
-            reg_values[code_to_reg[reg_des]] = to_int(imm_val)
-            values_print()
-        else:
-            shiftoperation(operation, code_to_reg[reg_des], imm_val)
-    elif (op in type_C):
+        w=''
+        w+=s1[0]
+        w+="."
+        for i in s1[1:]:
+            if i!=".":
+                w+=i
+   
 
-        reg1 = machine_instruction[10:13]
-        reg2 = machine_instruction[13:16]
-        if (operation == "movr"):
-            # if(code_to_reg[reg1]=="FLAGS"):
-            #     flag_val = to_int(str(flag["V"])+str(flag["L"])+str(flag["G"])+str(flag["E"]))
-            #     reg_values[code_to_reg[reg1]] = flag_val
-            if (code_to_reg[reg1] == "FLAGS"):
-                flag_val = to_int(str(flag["V"]) + str(flag["L"]) + str(flag["G"]) + str(flag["E"]))
+        exponent=to_binaryfloat(u)
+        return exponent+w[2:7]
 
-                reg_values[code_to_reg[reg2]] = flag_val
-            set_flag_zero(flag)
 
-            reg_values[code_to_reg[reg1]] = reg_values[code_to_reg[reg2]]
-            values_print()
-        elif (operation == "div"):
-            set_flag_zero(flag)
-            x = reg_values[code_to_reg[reg1]]
-            y = reg_values[code_to_reg[reg2]]
-            reg_values["R0"] = x // y
-            reg_values["R1"] = x % y
-            values_print()
-        elif (operation == "not"):
-            set_flag_zero(flag)
-            # a = to_16bit_binary(reg_values[code_to_reg[reg1]])
-            # final = ''
-            # for i in range(16):
-            #     if(a[i]=='0'):
-            #         final=final+'1'
-            #     else:
-            #         final = final+'0'
-            # final_val = to_int(final)
-            # reg_values[code_to_reg[reg2]] = final_val
-            a = to_16bit_binary(reg_values[code_to_reg[reg2]])
-            final = ''
-            for i in range(16):
-                if (a[i] == '0'):
-                    final = final + '1'
+
+   # print(convertToIeee(1.3125))
+
+
+
+
+
+
+
+    def flag_str_to_int(s):
+        u = 0
+        for l in range(len(s)):
+
+            u += int(s[l])#(2 * (len(s) - l - 1))
+
+        return u
+
+
+    def binary(n):
+        s = ''
+        b = 0
+        while n >= 1:
+            s += str(n % 2)
+            n = n // 2
+        return "0" * (8 - len(s)) + s[::-1]
+
+
+
+
+    count = 0
+
+
+    def apply(i):
+        global pcNo, ErrorFlag, flag, addtoLabel, leng_instruction, x, halt_count
+        k = i.split(" ")
+        string = ""
+        if list(k[0]) == []:
+            k = k[1:]
+
+
+        if k[0] == "var":
+            try:
+                assert len(k) == 2
+                variables[k[1]] = leng_instruction - x
+                leng_instruction += 1
+
+            except AssertionError:
+                ErrorArray.append(f"ERROR: Incorrect variable syntax at line {line_counter + 1}")
+                ErrorFlag += 1
+                return
+        # seperate conditions for miv immediate and mov register
+
+        # flag error handling
+        if len(k) > 1:
+            if "FLAGS" in k:
+                try:
+                    # assert k[0] == "mov" and k[2] in reg
+                    # dictreg[k[2]] = flag_str_to_int(flag)
+                    assert k[0] == "mov" and k[2] in reg
+                    dictreg[k[2]] = flag_str_to_int(flag)
+                except AssertionError:
+                    ErrorArray.append(f"ERROR: Illegal use of flag register at line {line_counter + 1}")
+                    ErrorFlag += 1
+                    return
+
+        if k[0] == "mov" and k[2] not in register.keys():
+            try:
+                assert k[2][0] == "$"
+            except AssertionError:
+                ErrorArray.append(f"Error: Immediate value has incorrect syntax at line {line_counter + 1}")
+                ErrorFlag += 1
+                return
+
+            try:
+                if ("." in k[2][1:]):
+                    string += "00010" + register[k[1]] + funcfordecimal((k[2][1:]))
+
                 else:
-                    final = final + '0'
-            final_val = to_int(final)
-            reg_values[code_to_reg[reg1]] = final_val
+                    assert int(k[2][1:]) <= 255
+                    assert int(k[2][1:]) >= 0
+                    string += instruction["movi"] + register[k[1]] + binary(int(k[2][1:]))
+            except AssertionError:
+                ErrorArray.append(f"ERROR: Illegal immediate value at line {line_counter + 1}")
+                ErrorFlag += 1
+                return
 
-            values_print()
-        elif (operation == "cmp"):
-            set_flag_zero(flag)
-            if (reg_values[code_to_reg[reg1]] == reg_values[code_to_reg[reg2]]):
-                flag["E"] = 1
-            elif (reg_values[code_to_reg[reg1]] > reg_values[code_to_reg[reg2]]):
-                flag["G"] = 1
-            elif (reg_values[code_to_reg[reg1]] < reg_values[code_to_reg[reg2]]):
-                flag["L"] = 1
-            values_print()
-    elif (op in type_D):
-        set_flag_zero(flag)
-        reg1 = machine_instruction[5:8]
-     #   x=reg_values[code_to_reg[reg1]]
-        memory_address = machine_instruction[8:16]
-        loadstore(operation, reg1, memory_address)
-      #  reg_values[code_to_reg[reg1]]=x
+        if k[0] == "mov" and k[2] in register.keys():
+            string += instruction["movr"] + "00000" + register[k[1]] + register[k[2]]
+
+        if k[0] in ["add", "sub", "mul", "xor", "or", "and"]:
+            try:
+                assert len(k) >= 4
+                if k[1] not in register.keys() or k[2] not in register.keys() or k[3] not in register.keys():
+                    ErrorArray.append(f"ERROR: Invalid instruction syntax for {k[0]} at line  {line_counter + 1}")
+                    addtoLabel = False
+                    return
+                if ("." in register[k[2]] or "." in register[k[3]]):
+                    if (k[0] == "add"):
+                        string += "00000" + "00" + register[k[1]] + register[k[2]] + register[k[3]]
+                    else:
+                        string += "0000" + "00" + register[k[1]] + register[k[2]] + register[k[3]]
+                else:
+                    string += instruction[k[0]] + "00" + register[k[1]] + register[k[2]] + register[k[3]]
+
+                if k[0] in ["add", "sub", "mul"]:
+                    if k[0] == ("add" or "sub" or "mul") and dictreg[k[1]] == -1:
+                        flag[-3] = 1
+            except AssertionError:
+                ErrorArray.append(f"ERROR: Insufficient Registers at line {line_counter + 1}")
+                ErrorFlag += 1
+                addtoLabel = False
+                return
+
+        if k[0] in ["ls", "rs"]:
+            if k[1] not in reg.keys():
+                ErrorArray.append(f"ERROR:Invalid instruction syntax at line {line_counter + 1}")
+                ErrorFlag += 1
+                return
+            try:
+                assert int(k[2][1:]) <= 255
+                string += instruction[k[0]] + register[k[1]] + binary(int(k[2][1:]))
+            except AssertionError:
+                ErrorArray.append(f"ERROR: Immediate value is greater than 8 Bits at line {line_counter + 1}")
+                ErrorFlag += 1
+                return
+        if k[0] in ["div", "not", "cmp"]:
+            string += instruction[k[0]] + "00000" + register[k[1]] + register[k[2]]
+
+        if k[0] in ["ld", "st"]:
+            # dictreg stuff is left
+            try:
+                assert k[2] in variables
+                if (k[2] in load_store):
+                    string += instruction[k[0]] + register[k[1]] + binary(variables[k[2]])
+                else:
+                    load_store[k[2]] = leng_instruction - x
+                    string += instruction[k[0]] + register[k[1]] + binary(variables[k[2]])
+                    leng_instruction += 1
+                pcNo += 1
+            except AssertionError:
+                ErrorArray.append(f"ERROR: Undeclared variable used at line {line_counter + 1}")
+                ErrorFlag += 1
+        if k[0] in ["jmp", "jlt", "jgt", "je"] and k[1] in label.keys():
+            string += instruction[k[0]] + "000" + label[k[1]][0]
+
+        if k[0] in ["jmp", "jlt", "jgt", "je"] and k[1] not in label.keys():
+            ErrorArray.append(f"ERROR: Invalid memory address at line {line_counter + 1}")
+            ErrorFlag += 1
+            return
+        if k[0] == "hlt":
+            halt_count += 1
+            try:
+                assert halt_count == 1
+                string += instruction[k[0]] + "00000000000"
+
+            except AssertionError:
+                ErrorArray.append(f"ERROR: Multiple halt instructions used")
+                ErrorFlag += 1
+        arr.append(string)
 
 
-    elif (op in type_E):
+    def check_initial_label(i):
+        global line_counter, addtoLabel, x, arr
+        j = 0
+        while (i[j] == " "):
+            j += 1
+        i = i[j:]
 
-        memory_address = machine_instruction[8:16]
-        if operation == "jmp":
-            set_flag_zero(flag)
-            values_print()
-            programmeCounter = to_int(memory_address)
-            continue
-        elif operation == "jlt":
-            if flag["L"] == 1:
-                set_flag_zero(flag)
-                values_print()
-                programmeCounter = to_int(memory_address)
-                continue
+        k = i.split(" ")
+        if k[0] == "mov" or k[0] == "var":
+            return
+        elif k[0] not in instruction.keys():
+
+            if k[0][-1] == ":":
+                if len(k) == 1:
+                    return
+                lb_len = len(k[0])
+                j = 1
+                while (k[j] == ''):
+                    j = j + 1
+                # if (i[lb_len] == " ") and (i[lb_len + 1] != " "):
+                if k[j] in instruction.keys() or k[j] == "mov":
+
+                    d = []
+
+                    d.append(binary(line_counter - x))
+
+                    label[i[0:lb_len - 1]] = d
+                    apply(str(i)[lb_len + j:])
+
+                    if addtoLabel:
+                        d.append(arr[-1])
+
+                        label[i[0:lb_len - 1]] = d
+                        return
+                else:
+                    return 0
             else:
-                set_flag_zero(flag)
-                values_print()
-        elif operation == "jgt":
-            if flag["G"] == 1:
-                set_flag_zero(flag)
-                values_print()
-                programmeCounter = to_int(memory_address)
-                # print("TESING...........")
-                # print(machine_code[programmeCounter])
-                continue
+                return 0
+        else:
+            return 0
+
+
+    x = 0
+
+    for i in s:
+        k = i.split(" ")
+        if k[0] == "var":
+            x = x + 1
+
+    for i in s:
+
+        k = i.split(" ")
+        if k[0] == "var":
+            variables[k[1]] = 0
+
+        if (ErrorFlag == 0):
+            check_initial_label(i)
+            line_counter += 1
+        else:
+            break
+    halt_count = 0
+    pcNo -= x
+    line_counter = 0
+
+
+    # checking if the immediate value is > 8bit
+
+    def function(s):
+        global line_counter, ErrorFlag
+        for i in s:
+            # check for illegal immediate value
+            # immediate_check(i.split(" "))
+            # will pass only the part of the string after a valid label
+            if (ErrorFlag > 0):
+                return
+            j = 0
+            while (i[j] == " "):
+                j += 1
+            i = i[j:]
+            k = i.split(" ")
+
+            try:
+                assert i.split(" ") != ['']
+                j = 0
+                while (i[j] == " "):
+                    j += 1
+                i = i[j:]
+                lab_len = check_labels(str(i))
+                if lab_len > 0:
+                    apply(str(i)[lab_len:])
+                    line_counter += 1
+                elif lab_len == 0:
+                    apply(str(i)[lab_len:])
+                    line_counter += 1
+
+                else:
+                    # ERROR HANDLING
+                    line_counter += 1
+                    continue
+
+
+            except AssertionError:
+                ErrorArray.append(f"ERROR: Blank Line at {line_counter + 1}")
+                ErrorFlag += 1
+
+
+    def check_labels(i):
+        global count, ErrorFlag
+        j = 0
+        while (i[j] == " "):
+            j += 1
+        i = i[j:]
+
+        k = i.split(" ")
+
+        if k[0] == "mov" or k[0] == "var":
+            return 0
+        elif k[0] not in instruction.keys():
+            if k[0][-1] == ":":
+                if len(k) == 1:
+                    ErrorFlag += 1
+                    ErrorArray.append(f"ERROR: No instruction after label at line {line_counter + 1}")
+                    return -1
+
+                label_len = len(k[0])
+                j = 1
+                while (k[j] == ''):
+                    j = j + 1
+                # if (i[lb_len] == " ") and (i[lb_len + 1] != " "):
+
+                if k[j] in instruction.keys() or k[j] == "mov":
+                    return label_len + j
+                else:
+                    ErrorFlag += 1
+                    ErrorArray.append(f"ERROR: Invalid label syntax at line {line_counter + 1}")
+                    return -1
+
+            elif len(k) != 1 and k[1] == ":":
+                if k[1] == ":":
+                    ErrorFlag += 1
+                    ErrorArray.append(f"ERROR: Invalid label syntax at line {line_counter + 1}")
+                    return -1
+                else:
+                    return 0
+            elif len(k) > 1:
+                if k[1] in instruction.keys() or k[1] == "mov":
+                    ErrorFlag += 1
+                    ErrorArray.append(f"ERROR: Invalid label syntax at line {line_counter + 1}")
+                    return -1
+                else:
+                    ErrorFlag += 1
+                    ErrorArray.append(f"ERROR: Invalid instruction syntax at line {line_counter + 1}")
+                    return -1
+
             else:
-                set_flag_zero(flag)
-                values_print()
-        elif operation == "je":
-            if flag["E"] == 1:
-                set_flag_zero(flag)
-                values_print()
-                programmeCounter = to_int(memory_address)
-                # print("TESTING")
-                # print(machine_code[programmeCounter])
-                continue
-            else:
-                set_flag_zero(flag)
-                values_print()
+                ErrorFlag += 1
+                ErrorArray.append(f"ERROR: Invalid instruction syntax at line {line_counter + 1}")
+                return -1
+        else:
+            return 0
 
-    elif (op in type_F):
-        set_flag_zero(flag)
-        halt = True
-        values_print()
-    programmeCounter += 1
 
-for i in range(len(machine_code)):
-    print(machine_code[i])
+    arr = []
+    variables = {}
+    leng_instruction = leng_instruction_og
+    load_store = {}
+    if (ErrorFlag == 0):
+        halt_count = 0
+        ErrorArray = []
+        ErrorFlag = 0
+        function(s)
 
-for i in range(dump_len):
-    print(memory_dump[i])
+    hltFlag = 0
+    # print(x,len(s),s)
+
+    for i in range(x, len(s)):
+        #  print(i)
+        try:
+            assert s[i].split(" ") != ['']
+            j = 0
+            while (s[i][j] == " "):
+                j += 1
+            s[i] = s[i][j:]
+            k = s[i].split(" ")
+
+            if k[0] == "var":
+                ErrorFlag += 1
+                ErrorArray.append(f"ERROR: Var declared at incorrect position at line {i + 1}")
+
+            if i == len(s) - 1:
+                if k[0] != "hlt":
+                    hltFlag += 1
+            if i < len(s) - 1:
+                if k[0] == "hlt":
+                    ErrorFlag += 1
+                    ErrorArray.append(f"ERROR: hlt used before last instruction at line {i + 1}")
+        except AssertionError:
+            ErrorArray.append(f"ERROR,Blank Line at {i + 1}")
+            ErrorFlag += 1
+
+    if (len(arr) > 0 and ErrorFlag == 0):
+        if arr[-1] == "0101000000000000":
+            pass
+        else:
+            ErrorFlag += 1
+            ErrorArray.append("ERROR: hlt not in given file")
+
+    if ErrorFlag == 0 and len(ErrorArray) == 0:
+        for i in range(x, len(arr)):
+            print(arr[i])
+    for i in ErrorArray:
+        print(i)
+    f.close()
+    f = open('Myfile.txt', 'w')
+    f.write("")
+    f.close()
+except:
+    print(f"Generak syntax error at{line_counter+1}")
