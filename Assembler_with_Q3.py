@@ -222,7 +222,7 @@ try:
                     addtoLabel = False
                     return
                 if ("." in register[k[2]] or "." in register[k[3]]):
-                        string += instruction[k[0]] + "00" + register[k[1]] + register[k[2]] + register[k[3]]
+                    string += instruction[k[0]] + "00" + register[k[1]] + register[k[2]] + register[k[3]]
 
                 else:
                     string += instruction[k[0]] + "00" + register[k[1]] + register[k[2]] + register[k[3]]
