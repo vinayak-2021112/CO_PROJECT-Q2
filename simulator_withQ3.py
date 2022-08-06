@@ -3,21 +3,11 @@ instruction = {"add": "10000","addf": "00000", "sub": "10001","subf": "0001", "m
                "mul": "10110", "div": "10111", "rs": "11000", "ls": "11001", "xor": "11010", "or": "11011",
                "and": "11100", "not": "11101", "cmp": "11110", "jmp": "11111", "jlt": "01100", "jgt": "01101",
                "je": "01111", "hlt": "01010", "var": "00000"}
-# instruction = {"add": "00000", "sub": "00001", "ld": "00100", "st": "00101", "mul": "00110",
-#                "div": "00111", "rs": "01000", "ls": "01001", "xor": "01010", "or": "01011", "and": "01100",
-#                "not": "01101",
-#                "cmp": "01110", "jmp": "01111", "jlt": "10000", "jgt": "10001", "je": "10010", "hlt": "10011",
-#                "movi": "00010", "movr": "00011"
-#                }
 
 opcode = {"10000": "add","00000": "addf", "10001": "sub","00001": "subf", "10010": "movi","00010": "movf","10011": "movr", "10100": "ld", "10101": "st",
           "10110": "mul", "10111": "div", "11000": "rs", "11001": "ls", "11010": "xor", "11011": "or",
           "11100": "and", "11101": "not", "11110": "cmp", "11111": "jmp", "01100": "jlt", "01101": "jgt",
           "01111": "je", "01010": "hlt"}
-
-# opcode = {'00000': 'add', '00001': 'sub', '00100': 'ld', '00101': 'st', '00110': 'mul', '00111': 'div', '01000': 'rs',
-#           '01001': 'ls', '01010': 'xor', '01011': 'or', '01100': 'and', '01101': 'not', '01110': 'cmp', '01111': 'jmp',
-#           '10000': 'jlt', '10001': 'jgt', '10010': 'je', '10011': 'hlt', '00010': 'movi', '00011': 'movr'}
 
 reg_codes = {"R0": "000", "R1": "001", "R2": "010", "R3": "011", "R4": "100", "R5": "101", "R6": "110",
              "FLAGS": "111"}
@@ -37,13 +27,6 @@ type_C = ["10011", "10111", "11101", "11110"]
 type_D = ["10100", "10101"]
 type_E = ["11111", "01100", "01101", "01111"]
 type_F = ["01010"]
-# type_A = ['00000', '00001', '00110', '01010', '01011', '01100']
-# type_B = ['00010', '01000', '01001']
-# type_C = ['00011', '00111', '01101', '01110']
-# type_D = ['00100', '00101']
-# type_E = ['01111', '10000', '10001', '10010']
-# type_F = ['10011']
-
 programmeCounter = 0
 halt = False
 
@@ -91,7 +74,7 @@ def to_16bit_binary(num):
     return binary_num
 
 
-def to_float(s):  # vinayak function yahan banaio
+def to_float(s): 
     l = s[:3]
     r = s[3:]
 
@@ -99,7 +82,6 @@ def to_float(s):  # vinayak function yahan banaio
     sum=1
     for i in range(len(r)):
         if r[i]=="1":
-          #  print(2** (-(i+1)))
             sum += 2** (-(i+1))
 
     return (2**num)*sum
@@ -193,7 +175,6 @@ def convertToIeee(s):
             w += i
 
     exponent = to_binaryfloat(u)
-   # print(exponent + w[2:7])
     return exponent + w[2:7]
 
 
@@ -269,7 +250,7 @@ def arithmeticOperations(operation, regs1, regs2, regd):
 
 def shiftoperation(operation, regdes, regval):
     if operation == "movf":
-        reg_values[regdes] = to_float(regval)  # vinayak to_float ka function bnaio
+        reg_values[regdes] = to_float(regval)
         values_print()
         return
     if operation == "movi":
@@ -318,10 +299,10 @@ while (not halt):
 
     if (op in type_A):
         set_flag_zero(flag)
-        reg_dest = machine_instruction[7:10]
-        reg_source1 = machine_instruction[10:13]
-        reg_source2 = machine_instruction[13:16]
-        arithmeticOperations(operation, code_to_reg[reg_dest], code_to_reg[reg_source1], code_to_reg[reg_source2])
+        reg_source1 = machine_instruction[7:10]
+        reg_source2 = machine_instruction[10:13]
+        reg_dest = machine_instruction[13:16]
+        arithmeticOperations(operation, code_to_reg[reg_source1], code_to_reg[reg_source2], code_to_reg[reg_dest])
     elif (op in type_B):
         set_flag_zero(flag)
         reg_des = machine_instruction[5:8]
@@ -336,16 +317,14 @@ while (not halt):
         reg1 = machine_instruction[10:13]
         reg2 = machine_instruction[13:16]
         if (operation == "movr"):
-            # if(code_to_reg[reg1]=="FLAGS"):
-            #     flag_val = to_int(str(flag["V"])+str(flag["L"])+str(flag["G"])+str(flag["E"]))
-            #     reg_values[code_to_reg[reg1]] = flag_val
             if (code_to_reg[reg1] == "FLAGS"):
                 flag_val = to_int(str(flag["V"]) + str(flag["L"]) + str(flag["G"]) + str(flag["E"]))
 
                 reg_values[code_to_reg[reg2]] = flag_val
+            
+            else:
+                reg_values[code_to_reg[reg2]] = reg_values[code_to_reg[reg1]]
             set_flag_zero(flag)
-
-            reg_values[code_to_reg[reg2]] = reg_values[code_to_reg[reg1]]
             values_print()
         elif (operation == "div"):
             set_flag_zero(flag)
@@ -356,25 +335,15 @@ while (not halt):
             values_print()
         elif (operation == "not"):
             set_flag_zero(flag)
-            # a = to_16bit_binary(reg_values[code_to_reg[reg1]])
-            # final = ''
-            # for i in range(16):
-            #     if(a[i]=='0'):
-            #         final=final+'1'
-            #     else:
-            #         final = final+'0'
-            # final_val = to_int(final)
-            # reg_values[code_to_reg[reg2]] = final_val
-            a = to_16bit_binary(reg_values[code_to_reg[reg2]])
+            a = to_16bit_binary(reg_values[code_to_reg[reg1]])
             final = ''
             for i in range(16):
-                if (a[i] == '0'):
-                    final = final + '1'
+                if(a[i]=='0'):
+                    final=final+'1'
                 else:
-                    final = final + '0'
+                    final = final+'0'
             final_val = to_int(final)
-            reg_values[code_to_reg[reg1]] = final_val
-
+            reg_values[code_to_reg[reg2]] = final_val
             values_print()
         elif (operation == "cmp"):
             set_flag_zero(flag)
@@ -388,17 +357,17 @@ while (not halt):
     elif (op in type_D):
         set_flag_zero(flag)
         reg1 = machine_instruction[5:8]
-     #   x=reg_values[code_to_reg[reg1]]
         memory_address = machine_instruction[8:16]
         loadstore(operation, reg1, memory_address)
-      #  reg_values[code_to_reg[reg1]]=x
+      
 
 
     elif (op in type_E):
 
-        memory_address = machine_instruction[8:16]
+        
         if operation == "jmp":
             set_flag_zero(flag)
+            memory_address = machine_instruction[8:16]
             values_print()
             programmeCounter = to_int(memory_address)
             continue
@@ -406,6 +375,7 @@ while (not halt):
             if flag["L"] == 1:
                 set_flag_zero(flag)
                 values_print()
+                memory_address = machine_instruction[8:16]
                 programmeCounter = to_int(memory_address)
                 continue
             else:
@@ -415,9 +385,8 @@ while (not halt):
             if flag["G"] == 1:
                 set_flag_zero(flag)
                 values_print()
+                memory_address = machine_instruction[8:16]
                 programmeCounter = to_int(memory_address)
-                # print("TESING...........")
-                # print(machine_code[programmeCounter])
                 continue
             else:
                 set_flag_zero(flag)
@@ -426,9 +395,8 @@ while (not halt):
             if flag["E"] == 1:
                 set_flag_zero(flag)
                 values_print()
+                memory_address = machine_instruction[8:16]
                 programmeCounter = to_int(memory_address)
-                # print("TESTING")
-                # print(machine_code[programmeCounter])
                 continue
             else:
                 set_flag_zero(flag)
@@ -451,7 +419,7 @@ for i in range(dump_len):
 cycle_count = list(cycles.keys())
 mem_address = list(cycles.values())
 
-p.scatter(mem_address,cycle_count)
-p.ylabel("Cycle Counter")
-p.xlabel("Memory addres")
-p.show()
+# p.scatter(mem_address,cycle_count)
+# p.ylabel("Cycle Counter")
+# p.xlabel("Memory addres")
+# p.show()

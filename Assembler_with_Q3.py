@@ -112,10 +112,10 @@ try:
                 w += i
 
         exponent = to_binaryfloat(u)
-    # print(exponent + w[2:7])
+    
         return exponent + w[2:7]
 
-    def to_float(s):  # vinayak function yahan banaio
+    def to_float(s):  
         l = s[:3]
         r = s[3:]
 
@@ -136,7 +136,7 @@ try:
         u = 0
         for l in range(len(s)):
 
-            u += int(s[l])#(2 * (len(s) - l - 1))
+            u += int(s[l])
 
         return u
 
@@ -173,14 +173,9 @@ try:
                 ErrorArray.append(f"ERROR: Incorrect variable syntax at line {line_counter + 1}")
                 ErrorFlag += 1
                 return
-        # seperate conditions for miv immediate and mov register
-
-        # flag error handling
         if len(k) > 1:
             if "FLAGS" in k:
                 try:
-                    # assert k[0] == "mov" and k[2] in reg
-                    # dictreg[k[2]] = flag_str_to_int(flag)
                     assert k[0] == "mov" and k[2] in reg
                     dictreg[k[2]] = flag_str_to_int(flag)
                 except AssertionError:
@@ -252,7 +247,6 @@ try:
             string += instruction[k[0]] + "00000" + register[k[1]] + register[k[2]]
 
         if k[0] in ["ld", "st"]:
-            # dictreg stuff is left
             try:
                 assert k[2] in variables
                 if (k[2] in load_store):
