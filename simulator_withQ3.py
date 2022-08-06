@@ -12,7 +12,7 @@ instruction = {"add": "10000","addf": "00000", "sub": "10001","subf": "0001", "m
 opcode = {"10000": "add","00000": "addf", "10001": "sub","00001": "subf", "10010": "movi","00010": "movf","10011": "movr", "10100": "ld", "10101": "st",
           "10110": "mul", "10111": "div", "11000": "rs", "11001": "ls", "11010": "xor", "11011": "or",
           "11100": "and", "11101": "not", "11110": "cmp", "11111": "jmp", "01100": "jlt", "01101": "jgt",
-          "01111": "je", "01010": "hlt", "00000": "var"}
+          "01111": "je", "01010": "hlt"}
 
 # opcode = {'00000': 'add', '00001': 'sub', '00100': 'ld', '00101': 'st', '00110': 'mul', '00111': 'div', '01000': 'rs',
 #           '01001': 'ls', '01010': 'xor', '01011': 'or', '01100': 'and', '01101': 'not', '01110': 'cmp', '01111': 'jmp',
@@ -66,7 +66,9 @@ def values_print():
         f"{to_binary(programmeCounter)} {to_16bit_binary(reg_values['R0'])} {to_16bit_binary(reg_values['R1'])} {to_16bit_binary(reg_values['R2'])} {to_16bit_binary(reg_values['R3'])} {to_16bit_binary(reg_values['R4'])} {to_16bit_binary(reg_values['R5'])} {to_16bit_binary(reg_values['R6'])} {(reg_values['FLAGS'])}")
 
 
+
 def to_binary(num):
+
     s = str(bin(num))
     binary_num = s[2:]
     if (len(binary_num) < 8):
@@ -75,6 +77,8 @@ def to_binary(num):
 
 
 def to_16bit_binary(num):
+    if isinstance(num, float):
+        return 8 * '0' + convertToIeee(num)
     s = str(bin(num))
     binary_num = s[2:]
     if (len(binary_num) < 16):
@@ -84,8 +88,6 @@ def to_16bit_binary(num):
         binary_num = binary_num[ind:]
     return binary_num
 
-def to_int(s):
-    return int(s, 2)
 
 def to_float(s):  # vinayak function yahan banaio
     l = s[:3]
@@ -102,7 +104,8 @@ def to_float(s):  # vinayak function yahan banaio
 
 
 
-
+def to_int(s):
+    return int(s, 2)
 
 
 def set_flag_zero(flag):
@@ -111,6 +114,17 @@ def set_flag_zero(flag):
 
 
 def to_binaryf(num):
+    s = str(bin(num))
+    binary_num = s[2:]
+    if (len(binary_num) < 8):
+        binary_num = (3 - len(binary_num)) * '0' + binary_num
+    return binary_num
+
+def to_16binaryforfloat(s):
+    return 8*'0'+s
+
+
+def to_binaryfloat(num):
     s = str(bin(num))
     binary_num = s[2:]
     if (len(binary_num) < 8):
@@ -133,23 +147,55 @@ def rec(x):
     s2 = str(((int(s1[1]) * 2) / 10 ** len(str(s1[1])))).split(".")
 
     wxx += s2[0]
-
     rec(int(s2[1]))
 
 
 def funcfordecimal(x):
+    global wxx,pqr
     s = str(x).split(".")
     l = int(s[0])
     r = int(s[1])
-    lb = to_binaryf(l)
+    lb = to_binaryfloat(l)
     rec(r)
     s1 = str(lb)
-    s2 = str('0' * (5 - len(wxx)) + wxx)
+    s2 = str(wxx + '0' * (5 - len(wxx)))
+    x = 0
+    for u in s1:
+        if u == '0':
+            x += 1
+        else:
+            break
+    wxx=''
+    pqr=0
+    return (s1[x:] + "." + s2)
 
-    return (s1 + s2)
+
+def convertToIeee(s):
+    global wxx,pqr
+    s1 = funcfordecimal(s)
+    wxx=''
+    pqr=0
+
+    u = 0
+    for i in s1[1:]:
+        if i != ".":
+            u += 1
+        else:
+            break
+
+    w = ''
+    w += s1[0]
+    w += "."
+    for i in s1[1:]:
+        if i != ".":
+            w += i
+
+    exponent = to_binaryfloat(u)
+   # print(exponent + w[2:7])
+    return exponent + w[2:7]
 
 
-def arithmeticOperations(operation, regd, regs1, regs2):
+def arithmeticOperations(operation, regs1, regs2, regd):
     if operation == "addf":
         if reg_values[regs1] + reg_values[regs2] > 65535:
             flag["V"] = 1
@@ -221,7 +267,7 @@ def arithmeticOperations(operation, regd, regs1, regs2):
 
 def shiftoperation(operation, regdes, regval):
     if operation == "movf":
-        reg_values[regdes] = to_float(regval)  
+        reg_values[regdes] = to_float(regval)  # vinayak to_float ka function bnaio
         values_print()
         return
     if operation == "movi":
@@ -290,7 +336,7 @@ while (not halt):
                 reg_values[code_to_reg[reg2]] = flag_val
             set_flag_zero(flag)
 
-            reg_values[code_to_reg[reg1]] = reg_values[code_to_reg[reg2]]
+            reg_values[code_to_reg[reg2]] = reg_values[code_to_reg[reg1]]
             values_print()
         elif (operation == "div"):
             set_flag_zero(flag)
