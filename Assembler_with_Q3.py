@@ -2,8 +2,14 @@ try:
     instruction = {"add": "10000", "sub": "10001", "movi": "10010", "movr": "10011", "ld": "10100", "st": "10101",
                     "mul": "10110", "div": "10111", "rs": "11000", "ls": "11001", "xor": "11010", "or": "11011",
                     "and": "11100", "not": "11101", "cmp": "11110", "jmp": "11111", "jlt": "01100", "jgt": "01101",
-                    "je": "01111", "hlt": "01010", "var": "00000"}
+                    "je": "01111", "hlt": "01010", "var": "00000","addf":"00000","subf":"00001","movf":"00010"}
 
+    # instruction = {"add": "00000", "sub": "00001", "ld": "00100", "st": "00101", "mul": "00110",
+    #                "div": "00111", "rs": "01000", "ls": "01001", "xor": "01010", "or": "01011", "and": "01100",
+    #                "not": "01101",
+    #                "cmp": "01110", "jmp": "01111", "jlt": "10000", "jgt": "10001", "je": "10010", "hlt": "10011",
+    #                "movi": "00010", "movr": "00011"
+    #                }
     register = {"R0": "000", "R1": "001", "R2": "010", "R3": "011", "R4": "100", "R5": "101", "R6": "110",
                 "FLAGS": "111"}
     reg = {"R0": "000", "R1": "001", "R2": "010", "R3": "011", "R4": "100", "R5": "101", "R6": "110"}
@@ -93,7 +99,7 @@ try:
 
     def convertToIeee(s):
         s1=funcfordecimal(s)
-    
+
 
         u=0
         for i in s1[1:]:
@@ -108,7 +114,7 @@ try:
         for i in s1[1:]:
             if i!=".":
                 w+=i
-   
+
 
         exponent=to_binaryfloat(u)
         return exponent+w[2:7]
@@ -117,7 +123,18 @@ try:
 
    # print(convertToIeee(1.3125))
 
+    def to_float(s):  # vinayak function yahan banaio
+        l = s[:3]
+        r = s[3:]
 
+        num = to_int(l)
+        sum = 1
+        for i in range(len(r)):
+            if r[i] == "1":
+                #  print(2** (-(i+1)))
+                sum += 2 ** (-(i + 1))
+
+        return (2 ** num) * sum
 
 
 
@@ -187,9 +204,10 @@ try:
                 ErrorFlag += 1
                 return
 
+        if k[0] == "movf":
             try:
                 if ("." in k[2][1:]):
-                    string += "00010" + register[k[1]] + funcfordecimal((k[2][1:]))
+                    string += "00010" + register[k[1]] + convertToIeee(k[2][1:])
 
                 else:
                     assert int(k[2][1:]) <= 255
@@ -203,7 +221,7 @@ try:
         if k[0] == "mov" and k[2] in register.keys():
             string += instruction["movr"] + "00000" + register[k[1]] + register[k[2]]
 
-        if k[0] in ["add", "sub", "mul", "xor", "or", "and"]:
+        if k[0] in ["add", "sub", "mul", "xor", "or", "and","addf","subf"]:
             try:
                 assert len(k) >= 4
                 if k[1] not in register.keys() or k[2] not in register.keys() or k[3] not in register.keys():
@@ -211,10 +229,8 @@ try:
                     addtoLabel = False
                     return
                 if ("." in register[k[2]] or "." in register[k[3]]):
-                    if (k[0] == "add"):
-                        string += "00000" + "00" + register[k[1]] + register[k[2]] + register[k[3]]
-                    else:
-                        string += "0000" + "00" + register[k[1]] + register[k[2]] + register[k[3]]
+                        string += instruction[k[0]] + "00" + register[k[1]] + register[k[2]] + register[k[3]]
+
                 else:
                     string += instruction[k[0]] + "00" + register[k[1]] + register[k[2]] + register[k[3]]
 
