@@ -121,7 +121,7 @@ try:
 
 
 
-   # print(convertToIeee(1.3125))
+    # print(convertToIeee(1.3125))
 
     def to_float(s):  # vinayak function yahan banaio
         l = s[:3]
@@ -199,6 +199,7 @@ try:
         if k[0] == "mov" and k[2] not in register.keys():
             try:
                 assert k[2][0] == "$"
+                string += instruction["movi"] + register[k[1]] + binary(int(k[2][1:]))
             except AssertionError:
                 ErrorArray.append(f"Error: Immediate value has incorrect syntax at line {line_counter + 1}")
                 ErrorFlag += 1
@@ -508,4 +509,4 @@ try:
     f.write("")
     f.close()
 except:
-    print(f"Generak syntax error at{line_counter+1}")
+        print(f"Generak syntax error at{line_counter+1}")
