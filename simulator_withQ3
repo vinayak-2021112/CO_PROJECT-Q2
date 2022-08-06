@@ -84,6 +84,8 @@ def to_16bit_binary(num):
         binary_num = binary_num[ind:]
     return binary_num
 
+def to_int(s):
+    return int(s, 2)
 
 def to_float(s):  # vinayak function yahan banaio
     l = s[:3]
@@ -100,8 +102,7 @@ def to_float(s):  # vinayak function yahan banaio
 
 
 
-def to_int(s):
-    return int(s, 2)
+
 
 
 def set_flag_zero(flag):
