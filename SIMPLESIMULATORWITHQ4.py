@@ -1,12 +1,12 @@
 import matplotlib.pyplot as p
 
-instruction = {"add": "10000", "sub": "10001", "movi": "10010", "movr": "10011", "ld": "10100", "st": "10101",
+instruction = {"add": "10000","addf": "00000", "sub": "10001","subf": "0001", "movi": "10010","movf": "00010", "movr": "10011", "ld": "10100", "st": "10101",
                "mul": "10110", "div": "10111", "rs": "11000", "ls": "11001", "xor": "11010", "or": "11011",
                "and": "11100", "not": "11101", "cmp": "11110", "jmp": "11111", "jlt": "01100", "jgt": "01101",
                "je": "01111", "hlt": "01010", "var": "00000"}
 
 
-opcode = {"10000": "add", "10001": "sub", "10010": "movi", "10011": "movr", "10100": "ld", "10101": "st",
+opcode = {"10000": "add","00000": "addf", "10001": "sub","00001": "subf", "10010": "movi","00010": "movf","10011": "movr", "10100": "ld", "10101": "st",
           "10110": "mul", "10111": "div", "11000": "rs", "11001": "ls", "11010": "xor", "11011": "or",
           "11100": "and", "11101": "not", "11110": "cmp", "11111": "jmp", "01100": "jlt", "01101": "jgt",
           "01111": "je", "01010": "hlt", "00000": "var"}
@@ -22,8 +22,8 @@ reg_values = {"R0": 0, "R1": 0, "R2": 0, "R3": 0, "R4": 0, "R5": 0, "R6": 0,
 
 flag = {"V": 0, "L": 0, "G": 0, "E": 0}
 
-type_A = ["10000", "10001", "10110", "11010", "11011", "11100"]
-type_B = ["10010", "11000", "11001"]
+type_A = ["10000", "10001", "10110", "11010", "11011", "11100","00000","00001"]
+type_B = ["10010", "11000", "11001","00010"]
 type_C = ["10011", "10111", "11101", "11110"]
 type_D = ["10100", "10101"]
 type_E = ["11111", "01100", "01101", "01111"]
@@ -74,6 +74,10 @@ def to_binary(num):
     return binary_num
 
 def to_16bit_binary(num):
+    
+    if(isinstance(num,float)):
+        return 8*'0'+funcfordecimal(num)
+
     s = str(bin(num))
     binary_num = s[2:]
     if(len(binary_num)<16):
@@ -82,11 +86,12 @@ def to_16bit_binary(num):
         ind = len(binary_num)-16
         binary_num = binary_num[ind:]
     return binary_num
+    
 
 def to_int(s):
     return int(s, 2)
 
-def to_float(s):
+def to_float(s):  # vinayak function yahan banaio
     l = s[:3]
     r = s[3:]
 
@@ -102,8 +107,6 @@ def to_float(s):
 def to_binaryf(num):
     s = str(bin(num))
     binary_num = s[2:]
-    if (len(binary_num) < 8):
-        binary_num = (3 - len(binary_num)) * '0' + binary_num
     return binary_num
 
 
@@ -134,16 +137,15 @@ def funcfordecimal(x):
     rec(r)
     s1 = str(lb)
     s2 = str('0' * (5 - len(wxx)) + wxx)
-
+    a = ''
+    
     return (s1 + s2)
-
-
 
 def set_flag_zero(flag):
     for i in flag:
         flag[i] = 0
 
-def arithmeticOperations(operation, regd, regs1, regs2):
+def arithmeticOperations(operation, regs1, regs2, regd):
     if operation == "addf":
         if reg_values[regs1] + reg_values[regs2] > 65535:
             flag["V"] = 1
@@ -152,8 +154,9 @@ def arithmeticOperations(operation, regd, regs1, regs2):
             reg_values[regd] = sum_over % large
             values_print()
             return
+        
         reg_values[regd] = reg_values[regs1] + reg_values[regs2]
-
+        
         values_print()
         return
     if operation == "add":
@@ -168,15 +171,6 @@ def arithmeticOperations(operation, regd, regs1, regs2):
         reg_values[regd] = reg_values[regs1] + reg_values[regs2]
         values_print()
         return
-    elif operation == "subf":
-        if reg_values[regs1] - reg_values[regs2] < 0:
-            flag["V"] = 1
-            reg_values[regd] = 0
-            values_print()
-            return
-        reg_values[regd] = reg_values[regs1] - reg_values[regs2]
-        values_print()
-        return
     elif operation == "sub":
         if reg_values[regs1] - reg_values[regs2] < 0:
             flag["V"] = 1
@@ -186,6 +180,16 @@ def arithmeticOperations(operation, regd, regs1, regs2):
         reg_values[regd] = reg_values[regs1] - reg_values[regs2]
         values_print()        
         return
+    elif operation == "subf":
+        if reg_values[regs1] - reg_values[regs2] < 0:
+            flag["V"] = 1
+            reg_values[regd] = 0
+            values_print()
+            return
+        reg_values[regd] = reg_values[regs1] - reg_values[regs2]
+        values_print()
+        return
+
     elif operation == "mul":
         if reg_values[regs1] * reg_values[regs2] > 65535 or reg_values[regs1] * reg_values[regs2] < 0:
             flag["V"] = 1
@@ -213,7 +217,9 @@ def arithmeticOperations(operation, regd, regs1, regs2):
 
 def shiftoperation(operation, regdes, regval):
     if operation == "movf":
+        
         reg_values[regdes] = to_float(regval)  
+        
         values_print()
         return
     if operation == "movi":
@@ -273,7 +279,10 @@ while (not halt):
             if(code_to_reg[reg1]=="FLAGS"):
                 flag_val = to_int(str(flag["V"])+str(flag["L"])+str(flag["G"])+str(flag["E"]))
                 reg_values[code_to_reg[reg2]] = flag_val
-            reg_values[code_to_reg[reg2]] = flag_val
+            # if(code_to_reg[reg2]=="FLAGS"):
+            #     flag_val = to_int(str(flag["V"])+str(flag["L"])+str(flag["G"])+str(flag["E"]))
+                
+            #     reg_values[code_to_reg[reg2]] = flag_val
             set_flag_zero(flag)
             
             reg_values[code_to_reg[reg1]] = reg_values[code_to_reg[reg2]]
@@ -296,7 +305,19 @@ while (not halt):
                     final = final+'0'
             final_val = to_int(final)
             reg_values[code_to_reg[reg2]] = final_val
-            
+            # a = to_16bit_binary(reg_values[code_to_reg[reg2]])
+            # final = ''
+            # for i in range(16):
+            #     if(a[i]=='0'):
+            #         final=final+'1'
+            #     else:
+            #         final = final+'0'
+            # final_val = to_int(final)
+            # reg_values[code_to_reg[reg1]] = final_val
+
+                    
+
+        
             values_print()
         elif(operation=="cmp"):
           set_flag_zero(flag)
@@ -381,7 +402,7 @@ for i in range(dump_len):
 cycle_count = list(cycles.keys())
 mem_address = list(cycles.values())
 
-p.scatter(mem_address,cycle_count)
-p.ylabel("Cycle Counter")
-p.xlabel("Memory addres")
-p.show()
+# p.scatter(mem_address,cycle_count)
+# p.ylabel("Cycle Counter")
+# p.xlabel("Memory addres")
+# p.show()

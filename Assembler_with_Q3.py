@@ -4,12 +4,6 @@ try:
                     "and": "11100", "not": "11101", "cmp": "11110", "jmp": "11111", "jlt": "01100", "jgt": "01101",
                     "je": "01111", "hlt": "01010", "var": "00000","addf":"00000","subf":"00001","movf":"00010"}
 
-    # instruction = {"add": "00000", "sub": "00001", "ld": "00100", "st": "00101", "mul": "00110",
-    #                "div": "00111", "rs": "01000", "ls": "01001", "xor": "01010", "or": "01011", "and": "01100",
-    #                "not": "01101",
-    #                "cmp": "01110", "jmp": "01111", "jlt": "10000", "jgt": "10001", "je": "10010", "hlt": "10011",
-    #                "movi": "00010", "movr": "00011"
-    #                }
     register = {"R0": "000", "R1": "001", "R2": "010", "R3": "011", "R4": "100", "R5": "101", "R6": "110",
                 "FLAGS": "111"}
     reg = {"R0": "000", "R1": "001", "R2": "010", "R3": "011", "R4": "100", "R5": "101", "R6": "110"}
@@ -77,51 +71,49 @@ try:
 
         rec(int(s2[1]))
 
-
     def funcfordecimal(x):
+        global wxx,pqr
         s = str(x).split(".")
         l = int(s[0])
         r = int(s[1])
         lb = to_binaryfloat(l)
         rec(r)
         s1 = str(lb)
-        s2 = str(wxx+'0'*(5-len(wxx)))
-        x=0
+        s2 = str(wxx + '0' * (5 - len(wxx)))
+        x = 0
         for u in s1:
-            if u=='0':
-                x+=1
+            if u == '0':
+                x += 1
             else:
                 break
-
-
-        return (s1[x:] + "."+ s2)
+        wxx=''
+        pqr=0
+        return (s1[x:] + "." + s2)
 
 
     def convertToIeee(s):
-        s1=funcfordecimal(s)
+        global wxx,pqr
+        s1 = funcfordecimal(s)
+        wxx=''
+        pqr=0
 
-
-        u=0
+        u = 0
         for i in s1[1:]:
-            if i!=".":
-                u+=1
+            if i != ".":
+                u += 1
             else:
                 break
 
-        w=''
-        w+=s1[0]
-        w+="."
+        w = ''
+        w += s1[0]
+        w += "."
         for i in s1[1:]:
-            if i!=".":
-                w+=i
+            if i != ".":
+                w += i
 
-
-        exponent=to_binaryfloat(u)
-        return exponent+w[2:7]
-
-
-
-    # print(convertToIeee(1.3125))
+        exponent = to_binaryfloat(u)
+    # print(exponent + w[2:7])
+        return exponent + w[2:7]
 
     def to_float(s):  # vinayak function yahan banaio
         l = s[:3]
