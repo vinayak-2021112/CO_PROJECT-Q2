@@ -1,3 +1,4 @@
+import matplotlib.pyplot as p
 instruction = {"add": "10000","addf": "00000", "sub": "10001","subf": "0001", "movi": "10010","movf": "00010", "movr": "10011", "ld": "10100", "st": "10101",
                "mul": "10110", "div": "10111", "rs": "11000", "ls": "11001", "xor": "11010", "or": "11011",
                "and": "11100", "not": "11101", "cmp": "11110", "jmp": "11111", "jlt": "01100", "jgt": "01101",
@@ -28,6 +29,7 @@ reg_values = {"R0": 0, "R1": 0, "R2": 0, "R3": 0, "R4": 0, "R5": 0, "R6": 0,
               "FLAGS": 0}
 
 flag = {"V": 0, "L": 0, "G": 0, "E": 0}
+cycles = {}
 
 type_A = ["00000","00001","10000", "10001", "10110", "11010", "11011", "11100"]
 type_B = ["00010","10010", "11000", "11001"]
@@ -300,7 +302,14 @@ def loadstore(operation, reg, mem):
 
         values_print()
 
+def update_cycles(cycles, programmecounter):
+    n = len(cycles)
 
+    if (n == 0):
+        cycles[0] = programmecounter
+        return
+
+    cycles[n] = programmecounter
 while (not halt):
     machine_instruction = machine_code[programmeCounter]
     op = machine_instruction[0:5]
@@ -429,6 +438,7 @@ while (not halt):
         set_flag_zero(flag)
         halt = True
         values_print()
+    update_cycles(cycles, programmeCounter)
     programmeCounter += 1
 
 for i in range(len(machine_code)):
@@ -436,3 +446,12 @@ for i in range(len(machine_code)):
 
 for i in range(dump_len):
     print(memory_dump[i])
+
+
+cycle_count = list(cycles.keys())
+mem_address = list(cycles.values())
+
+p.scatter(mem_address,cycle_count)
+p.ylabel("Cycle Counter")
+p.xlabel("Memory addres")
+p.show()
