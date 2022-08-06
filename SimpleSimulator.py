@@ -180,11 +180,10 @@ def convertToIeee(s):
 
 def arithmeticOperations(operation, regs1, regs2, regd):
     if operation == "addf":
-        if reg_values[regs1] + reg_values[regs2] > 65535:
+        if reg_values[regs1] + reg_values[regs2] > 252:
             flag["V"] = 1
-            large = 2 ** 16
-            sum_over = reg_values[regs1] + reg_values[regs2]
-            reg_values[regd] = sum_over % large
+            
+            reg_values[regd] = 252
             values_print()
             return
         reg_values[regd] = reg_values[regs1] + reg_values[regs2]
