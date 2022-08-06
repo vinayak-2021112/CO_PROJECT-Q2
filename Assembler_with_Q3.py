@@ -127,7 +127,7 @@ try:
         l = s[:3]
         r = s[3:]
 
-        num = to_int(l)
+        num = int(l,2)
         sum = 1
         for i in range(len(r)):
             if r[i] == "1":
@@ -509,4 +509,4 @@ try:
     f.write("")
     f.close()
 except:
-        print(f"Generak syntax error at{line_counter+1}")
+        print(f"General syntax error at{line_counter+1}")

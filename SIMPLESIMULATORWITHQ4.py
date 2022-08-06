@@ -86,11 +86,76 @@ def to_16bit_binary(num):
 def to_int(s):
     return int(s, 2)
 
+def to_float(s):
+    l = s[:3]
+    r = s[3:]
+
+    num = to_int(l)
+    sum=1
+    for i in range(len(r)):
+        if r[i]=="1":
+          #  print(2** (-(i+1)))
+            sum += 2** (-(i+1))
+
+    return (2**num)*sum
+
+def to_binaryf(num):
+    s = str(bin(num))
+    binary_num = s[2:]
+    if (len(binary_num) < 8):
+        binary_num = (3 - len(binary_num)) * '0' + binary_num
+    return binary_num
+
+
+wxx = ''
+pqr = 0
+
+
+def rec(x):
+    global wxx, pqr
+    s = x / (10 ** len(str(x)))
+    s1 = str(s).split(".")
+    pqr += 1
+
+    if (s1[1]) == '0' or pqr > 5:
+        return
+    s2 = str(((int(s1[1]) * 2) / 10 ** len(str(s1[1])))).split(".")
+
+    wxx += s2[0]
+
+    rec(int(s2[1]))
+
+
+def funcfordecimal(x):
+    s = str(x).split(".")
+    l = int(s[0])
+    r = int(s[1])
+    lb = to_binaryf(l)
+    rec(r)
+    s1 = str(lb)
+    s2 = str('0' * (5 - len(wxx)) + wxx)
+
+    return (s1 + s2)
+
+
+
 def set_flag_zero(flag):
     for i in flag:
         flag[i] = 0
 
 def arithmeticOperations(operation, regd, regs1, regs2):
+    if operation == "addf":
+        if reg_values[regs1] + reg_values[regs2] > 65535:
+            flag["V"] = 1
+            large = 2 ** 16
+            sum_over = reg_values[regs1] + reg_values[regs2]
+            reg_values[regd] = sum_over % large
+            values_print()
+            return
+        reg_values[regd] = reg_values[regs1] + reg_values[regs2]
+
+        values_print()
+        return
     if operation == "add":
         
         if reg_values[regs1] + reg_values[regs2] > 65535:
@@ -101,6 +166,15 @@ def arithmeticOperations(operation, regd, regs1, regs2):
             values_print()
             return
         reg_values[regd] = reg_values[regs1] + reg_values[regs2]
+        values_print()
+        return
+    elif operation == "subf":
+        if reg_values[regs1] - reg_values[regs2] < 0:
+            flag["V"] = 1
+            reg_values[regd] = 0
+            values_print()
+            return
+        reg_values[regd] = reg_values[regs1] - reg_values[regs2]
         values_print()
         return
     elif operation == "sub":
@@ -138,6 +212,10 @@ def arithmeticOperations(operation, regd, regs1, regs2):
 
 
 def shiftoperation(operation, regdes, regval):
+    if operation == "movf":
+        reg_values[regdes] = to_float(regval)  
+        values_print()
+        return
     if operation == "movi":
         reg_values[regdes] = to_int(regval)
         values_print()
@@ -195,10 +273,7 @@ while (not halt):
             if(code_to_reg[reg1]=="FLAGS"):
                 flag_val = to_int(str(flag["V"])+str(flag["L"])+str(flag["G"])+str(flag["E"]))
                 reg_values[code_to_reg[reg2]] = flag_val
-            # if(code_to_reg[reg2]=="FLAGS"):
-            #     flag_val = to_int(str(flag["V"])+str(flag["L"])+str(flag["G"])+str(flag["E"]))
-                
-            #     reg_values[code_to_reg[reg2]] = flag_val
+            reg_values[code_to_reg[reg2]] = flag_val
             set_flag_zero(flag)
             
             reg_values[code_to_reg[reg1]] = reg_values[code_to_reg[reg2]]
@@ -221,19 +296,7 @@ while (not halt):
                     final = final+'0'
             final_val = to_int(final)
             reg_values[code_to_reg[reg2]] = final_val
-            # a = to_16bit_binary(reg_values[code_to_reg[reg2]])
-            # final = ''
-            # for i in range(16):
-            #     if(a[i]=='0'):
-            #         final=final+'1'
-            #     else:
-            #         final = final+'0'
-            # final_val = to_int(final)
-            # reg_values[code_to_reg[reg1]] = final_val
-
-                    
-
-        
+            
             values_print()
         elif(operation=="cmp"):
           set_flag_zero(flag)

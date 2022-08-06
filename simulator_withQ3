@@ -221,7 +221,7 @@ def arithmeticOperations(operation, regd, regs1, regs2):
 
 def shiftoperation(operation, regdes, regval):
     if operation == "movf":
-        reg_values[regdes] = to_float(regval)  # vinayak to_float ka function bnaio
+        reg_values[regdes] = to_float(regval)  
         values_print()
         return
     if operation == "movi":
